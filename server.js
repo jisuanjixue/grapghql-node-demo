@@ -1,5 +1,6 @@
 const express = require('express')
 const { graphqlHTTP } = require('express-graphql')
+const mongoose = require("mongoose");
 
 // var { buildSchema } = require("graphql");
 const schema = require("./Schema/schema");
@@ -12,18 +13,27 @@ const schema = require("./Schema/schema");
 // `);
 
 // The root provides a resolver function for each API endpoint
-var root = {
-  hello: () => {
-    return "Hello world!";
-  }
-};
+// var root = {
+//   hello: () => {
+//     return "Hello world!";
+//   }
+// };
+
+mongoose.connect("mongodb://127.0.0.1/graphql-node-demo", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true 
+});
+
+mongoose.connection.once("open", function() {
+  console.log("connected to database!");
+});
 
 const app = express();
 app.use(
   "/graphql",
   graphqlHTTP({
     schema: schema,
-    rootValue: root,
+    // rootValue: root,
     graphiql: true
   })
 );

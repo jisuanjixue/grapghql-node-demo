@@ -1,5 +1,7 @@
 const graphql = require("graphql");
 const _ = require("lodash");
+const Book = require("../models/book");
+const Author = require("../models/author");
 
 const {
   GraphQLObjectType,
@@ -94,8 +96,70 @@ const BookType = new GraphQLObjectType({
   })
 })
 
+// 添加作者和书本
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    addAuthor: {
+      type: AuthorType,
+      args: {
+        name: { type: GraphQLString },
+        age: { type: GraphQLInt }
+      },
+      resolve(parent, args) {
+        let author = new Author({
+          name: args.name,
+          age: args.age
+        });
+        return author.save();
+      }
+    },
+    addBook: {
+      type: AuthorType,
+      args: {
+        name: { type: GraphQLString },
+        authorId: { type: GraphQLString }
+      },
+      resolve(parent, args) {
+        let book = new Book({
+          name: args.name,
+          authorId: args.authorId
+        });
+        return book.save();
+      }
+    }
+  }
+});
+
+
 
 // 定义查询方法
+// const RootQuery = new GraphQLObjectType({
+//   name: "RootQueryType",
+//   fields: {
+//     book: {
+//       type: BookType,
+//       args: { id: { type: GraphQLID } },
+//       resolve(parent, args) {
+//         return _.find(books, { id: args.id });
+//       }
+//     },
+//     books: {
+//       type: new GraphQLList(BookType),
+//       resolve(parent, args) {
+//         return books;
+//       }
+//     },
+//     author: {
+//       type: AuthorType,
+//       args: { id: { type: GraphQLID } },
+//       resolve(parent, args) {
+//         return _.find(authors, { id: args.id });
+//       }
+//     }
+//   }
+// });
+
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
@@ -103,20 +167,26 @@ const RootQuery = new GraphQLObjectType({
       type: BookType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return _.find(books, { id: args.id });
-      }
-    },
-    books: {
-      type: new GraphQLList(BookType),
-      resolve(parent, args) {
-        return books;
+        return Book.findById(args.id);
       }
     },
     author: {
       type: AuthorType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return _.find(authors, { id: args.id });
+        return Author.findById(args.id);
+      }
+    },
+    books: {
+      type: new GraphQLList(BookType),
+      resolve(parent, args) {
+        return Book.find({});
+      }
+    },
+    authors: {
+      type: new GraphQLList(AuthorType),
+      resolve(parent, args) {
+        return Author.find({});
       }
     }
   }
@@ -124,5 +194,6 @@ const RootQuery = new GraphQLObjectType({
 
 // 构建schema并导出
 module.exports = new GraphQLSchema({
-  query: RootQuery
+  query: RootQuery,
+  mutation: Mutation
 });
